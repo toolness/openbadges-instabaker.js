@@ -30,7 +30,7 @@ The script looks at all the images on the page on `DOMContentLoaded` and
 attaches event handlers to them. When those badges are moused-over or
 touched, baking occurs.
 
-At this time, a `baked` event is emitted from the image and a
+At this time, a `bake` event is emitted from the image and a
 `data-baked` attribute is set on it.
 
 If the user's browser doesn't support automatic baking, the script
