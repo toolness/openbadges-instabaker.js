@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+a img { border: none; } /* IE10 fix */
+img[data-baked] { background: lightgreen; }
+#recipient { background: yellow; }
+</style>
+<title>Open Badges Instabaker</title>
+  <div id="baked" style="display: none">
+    <h2>Get Your Baked Badge</h2>
+    <p>The badge below is for <span id="recipient"></span>.
+      It's automatically baked when you mouse-over or touch it on modern browsers.</p>
+    <p>The image will acquire a green background upon baking. If you
+      don't see this background, then your browser doesn't support
+      automatic baking.</p>
+    <p>Once the badge is baked, you can click on it to save it.
+      Right-clicking and selecting "Save Image As..." from the
+      context menu should work too. In some browsers, you can
+      also drag the image to your desktop.</p>
+    <!-- This instructs the markup API to turn the link into a
+         download link. -->
+    <a data-download-openbadge>
+      <!-- data-openbadges points to the assertion for the badge. It
+           will be dynamically updated at page load to point at
+           a specific assertion for the current recipient.
+
+           data-download is the name of the file that the baked
+           badge will be saved as, if the user decides to save it.
+           USERNAME will dynamically be updated at page load to
+           relect the usernaem of the current recipient. -->
+      <img src="airplane.png" alt="Airplane Badge"
+           data-download="airplane-badge-for-USERNAME.png"
+           data-openbadges="http://badgetest.herokuapp.com/raw.json">
+    </a>
+    <p>You can also inspect the underlying
+      <a id="assertion" href="">assertion</a> or <a href="?">reset</a>
+      this page. Also, try viewing the source of this page to learn how it
+      works!</p>
+  </div>
+
+  <h2>Issue a Baked Badge</h2>
+  <form>
+    Recipient: <input type="email" name="recipient" required>
+    <input type="submit" value="Issue">
+  </form>
+
+  <h2>Show Baked Badge Info</h2>
+  <p>Just select a file and we'll show you the baked info inside.</p>
+  <form>
+    <input onchange="showBakedBadgeInfo(this)" type="file">
+    <input type="reset">
+  </form>
+  <pre id="baked-info"></pre>
+<script src="vendor/png-baker.js"></script>
+<script src="../openbadges-instabaker.js"></script>
+<script>
+var $ = document.querySelector.bind(document);
+
+function showBakedBadgeInfo(input) {
+  var reader = new FileReader();
+  reader.onloadend = function() {
+    var baker = new PNGBaker(reader.result);
+    $('#baked-info').textContent = JSON.stringify(baker.textChunks);
+  };
+  reader.readAsArrayBuffer(input.files[0]);
+}
+
+// This function just uses the recipient information to configure 
+// openbadges-instabaker's Markup API to do its thing when needed; it
+// doesn't actually do any baking itself.
+//
+// We'll use badgetest to host the actual assertion. For more information,
+// see https://github.com/stenington/badgetest.
+function setBakingMarkup(recipientMatch) {
+  if (!recipientMatch) return;
+
+  var recipient = decodeURIComponent(recipientMatch[1]);
+  var username = recipient.split('@')[0];
+  var div = $("#baked");
+  var img = div.querySelector('img[data-openbadges]');
+  var download = img.getAttribute('data-download');
+  var baseAssertionURL = img.getAttribute('data-openbadges');
+  var issuerOrigin = baseAssertionURL.match(/^(https?:\/\/[^\/]+)/)[1];
+  var override = JSON.stringify({
+    badge: {
+      issuer: {
+        origin: issuerOrigin
+      },
+      name: img.getAttribute('alt')
+    }
+  });
+  var assertionURL = baseAssertionURL +
+                     '?email=' + encodeURIComponent(recipient) +
+                     '&override=' + encodeURIComponent(override);
+
+  $("#assertion").href = assertionURL;
+  $("#recipient").textContent = recipient;
+  img.setAttribute('data-download', download.replace('USERNAME', username));
+  div.style.display = "block";
+}
+
+setBakingMarkup(location.search.match(/recipient=(.*)/));
+</script>
