@@ -98,6 +98,7 @@ function setBakingMarkup(recipientMatch) {
   $("#assertion").href = assertionURL;
   $("#recipient").textContent = recipient;
   img.setAttribute('data-download', download.replace('USERNAME', username));
+  img.setAttribute('data-openbadges', assertionURL);
   div.style.display = "block";
 }
 
