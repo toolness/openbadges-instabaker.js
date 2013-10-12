@@ -2,6 +2,7 @@
 <meta charset="utf-8">
 <style>
 a img { border: none; } /* IE10 fix */
+img[data-openbadges] { width: 256px; }
 img[data-baked] { background: lightgreen; }
 #recipient { background: yellow; }
 </style>
@@ -29,8 +30,8 @@ img[data-baked] { background: lightgreen; }
            badge will be saved as, if the user decides to save it.
            USERNAME will dynamically be updated at page load to
            relect the usernaem of the current recipient. -->
-      <img src="img/airplane.png" alt="Airplane Badge"
-           data-download="airplane-badge-for-USERNAME.png"
+      <img src="img/badge.png" alt="Test Badge"
+           data-download="test-badge-for-USERNAME.png"
            data-openbadges="http://badgetest.herokuapp.com/raw.json">
     </a>
     <p>You can also inspect the underlying
