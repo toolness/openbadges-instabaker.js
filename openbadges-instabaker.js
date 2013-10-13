@@ -2,10 +2,7 @@
   var DATA_ATTR = 'data-openbadges';
   var FILENAME_ATTR = 'data-download';
   var BAKED_ATTR = 'data-baked';
-  var BAKED_EVENT_TYPE = 'bake';
-  var IMG_SELECTOR = 'img[' + DATA_ATTR + ']';
-  var LINK_SELECTOR = 'a[data-download-openbadge]';
-  var INSTABAKE_TRIGGERS = ['mouseover', 'touchstart'];
+  var DOWNLOAD_LINK_ATTR = 'data-download-openbadge';
   var FILENAME_RE = /([^\/]+)$/;
   var DEFAULT_FILENAME = 'badge.png';
   var URL = window.URL || window.webkitURL;
@@ -18,10 +15,7 @@
     };
   }
 
-  function instabakeDownloadLink(event) {
-    var a = this;
-    var img = event.target;
-
+  function instabakeDownloadLink(a, img) {
     if ('download' in a) {
       a.setAttribute('download', img.getAttribute(FILENAME_ATTR));
       a.setAttribute('href', img.src);
@@ -29,12 +23,9 @@
       a.setAttribute('href', '#');
       a.addEventListener('click', handleSaveBlobInIE(img));
     }
-
-    a.removeEventListener(BAKED_EVENT_TYPE, instabakeDownloadLink);
   }
 
-  function instabakeImage() {
-    var img = this;
+  function instabakeImage(img) {
     var w = img.naturalWidth, h = img.naturalHeight;
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
@@ -60,33 +51,21 @@
     img.setAttribute(BAKED_ATTR, new Date().toString());
     img.blob = blob;
 
-    var bakedEvent = document.createEvent('Event');
-    bakedEvent.initEvent(BAKED_EVENT_TYPE, true, true);
-    img.dispatchEvent(bakedEvent);
-
-    INSTABAKE_TRIGGERS.forEach(function(eventType) {
-      img.removeEventListener(eventType, instabakeImage);
-    });
+    for (var prnt = img.parentNode; prnt; prnt = prnt.parentNode)
+      if (prnt.nodeName == 'A' && prnt.hasAttribute(DOWNLOAD_LINK_ATTR)) {
+        instabakeDownloadLink(prnt, img);
+        break;
+      }
   }
 
-  function init() {
-    var imgs = document.querySelectorAll(IMG_SELECTOR);
-    var links = document.querySelectorAll(LINK_SELECTOR);
-
-    [].slice.call(imgs).forEach(function(img) {
-      INSTABAKE_TRIGGERS.forEach(function(eventType) {
-        img.addEventListener(eventType, instabakeImage);
-      });
-    });
-
-    [].slice.call(links).forEach(function(a) {
-      a.addEventListener(BAKED_EVENT_TYPE, instabakeDownloadLink);
-    });
+  function maybeInstabake(event) {
+    if (event.target.nodeName == 'IMG' &&
+        event.target.hasAttribute(DATA_ATTR) &&
+        !event.target.hasAttribute(BAKED_ATTR))
+      instabakeImage(event.target);
   }
 
   if (!URL || !window.HTMLCanvasElement || !window.Blob) return;
-  if (document.readyState == 'loading')
-    window.addEventListener('DOMContentLoaded', init);
-  else
-    init();
+  document.addEventListener('mouseover', maybeInstabake, true);
+  document.addEventListener('touchstart', maybeInstabake, true);
 })(PNGBaker);

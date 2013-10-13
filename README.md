@@ -24,24 +24,22 @@ For any badge images that you want baked:
   when the user clicks on the badge image, they will be prompted to
   download it.
 
+See `index.html` for an example of all these in practice.
+
 ## How It Works
 
-The script looks at all the images on the page on `DOMContentLoaded` and
-attaches event handlers to them. When those badges are moused-over or
-touched, baking occurs.
-
-At this time, a `bake` event is emitted from the image and a
-`data-baked` attribute is set on it.
+When any image with the `data-openbadges` attribute is moused-over or
+touched, baking occurs. At this time, a `data-baked` attribute is set on it
+to mark it as baked and ensure that it's not re-baked.
 
 If the user's browser doesn't support automatic baking, the script
 does nothing.
 
 ## Limitations
 
-* Currently, there's no way to delay the initialization of the script
-  to a time other than `DOMContentLoaded`. This means that if badge
-  images are added to the page after this event, they won't be
-  automatically baked when the user starts interacting with them.
+* Badge images need to be served from the same origin as the web page.
+  Alternatively, the `crossorigin` attribute will allow automatic
+  baking to work on browsers that support it.
 
 ## License
 
